@@ -3,12 +3,7 @@ use std::cmp::Ordering;
 use std::collections::{BinaryHeap, HashMap};
 use std::time;
 
-
-#[derive(Debug, Clone)]
-pub enum OrderSide {
-    Bid,
-    Ask,
-}
+use super::domain::OrderSide;
 
 
 #[derive(Clone)]
@@ -124,7 +119,7 @@ impl<T> OrderQueue<T> {
             id,
             price,
             timestamp: ts,
-            order_side: self.queue_side.clone(),
+            order_side: self.queue_side,
         });
         self.orders.insert(id, order);
         true
@@ -203,7 +198,7 @@ impl<T> OrderQueue<T> {
                 id,
                 price,
                 timestamp: ts,
-                order_side: self.queue_side.clone(),
+                order_side: self.queue_side,
             });
             // construct new queue
             let mut amended_queue = BinaryHeap::from(active_orders);
@@ -324,7 +319,7 @@ mod test {
         assert_eq!(ask_queue.pop().unwrap().name, "low ask second");
         assert_eq!(ask_queue.pop().unwrap().name, "high ask");
     }
-    
+
     #[test]
     fn queue_operations_modify_order() {
         let mut bid_queue = get_queue_bids();

@@ -1,62 +1,89 @@
 
-use super::assets;
-use super::assets::TradePair;
-use super::order_queues::OrderSide;
+//use super::assets;
+//use super::assets::TradePair;
+
+use std::time::SystemTime;
+
+use super::domain;
+use super::domain::{OrderSide, Asset};
+
+
 
 
 
 pub enum OrderRequest {
     MarketOrder {
-        pair: TradePair, // fixme!
-        qty: f64,
+        order_asset: Asset,
+        price_asset: Asset,
         side: OrderSide,
+        qty: f64,
+        ts: SystemTime,
     },
     LimitOrder {
-        pair: TradePair,
+        order_asset: Asset,
+        price_asset: Asset,
+        side: OrderSide,
         price: f64,
         qty: f64,
-        side: OrderSide,
+        ts: SystemTime,
     },
-    AmendOrder { id: u64, price: f64, qty: f64 },
-    CancelOrder { id: u64 },
+    AmendOrder {
+        id: u64,
+        side: OrderSide,
+        price: f64,
+        qty: f64,
+        ts: SystemTime,
+    },
+    CancelOrder {
+        id: u64,
+        side: OrderSide,
+        ts: SystemTime,
+    },
 }
 
 
-pub enum OrderError<'a> {
+pub enum RequestError<'a> {
     UnsupportedAsset(&'a str),
-    NotTradingPair,
+
+    //todo moar errors!
 }
 
+/* Constructors */
 
-pub fn new_market_order<'a>(
-    asset_from: &'a str,
-    asset_to: &'a str,
+// FIXME simplify signature?
+pub fn new_market_order_request<'a>(
+    order_asset: &'a str,
+    price_asset: &'a str,
     side: OrderSide,
     qty: f64,
-) -> Result<OrderRequest, OrderError<'a>> {
-    // todo: get id sequence
-    let order_id: u64 = 1;
+    ts: SystemTime,
+) -> Result<OrderRequest, RequestError<'a>> {
 
     // some validation
-    let asset_from = assets::parse_asset(asset_from).ok_or(
-        OrderError::UnsupportedAsset(asset_from),
+    let order_asset = domain::parse_asset(order_asset).ok_or(
+        RequestError::UnsupportedAsset(order_asset),
     )?;
-    let asset_to = assets::parse_asset(asset_to).ok_or(
-        OrderError::UnsupportedAsset(
-            asset_to,
-        ),
+    let price_asset = domain::parse_asset(price_asset).ok_or(
+        RequestError::UnsupportedAsset(price_asset),
     )?;
-
-    if !assets::can_trade(&asset_from, &asset_to) {
-        return Err(OrderError::NotTradingPair);
-    }
 
     Ok(OrderRequest::MarketOrder {
-        pair: TradePair {
-            from: asset_from,
-            to: asset_to,
-        },
+        order_asset,
+        price_asset,
         qty,
         side,
+        ts,
     })
+}
+
+
+// TODO two more constructors!
+
+
+pub fn limit_order_cancel_request(order_id: u64, side: OrderSide, ts: SystemTime) -> OrderRequest {
+    OrderRequest::CancelOrder {
+        id: order_id,
+        side,
+        ts,
+    }
 }
