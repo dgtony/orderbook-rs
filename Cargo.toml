@@ -1,0 +1,6 @@
+[package]
+name = "orderbook"
+version = "0.1.0"
+authors = ["Anton Dort-Golts <dortgolts@gmail.com>"]
+
+[dependencies]
