@@ -12,14 +12,14 @@ use super::domain::{OrderSide, Asset};
 
 
 pub enum OrderRequest {
-    MarketOrder {
+    NewMarketOrder {
         order_asset: Asset,
         price_asset: Asset,
         side: OrderSide,
         qty: f64,
         ts: SystemTime,
     },
-    LimitOrder {
+    NewLimitOrder {
         order_asset: Asset,
         price_asset: Asset,
         side: OrderSide,
@@ -67,7 +67,7 @@ pub fn new_market_order_request<'a>(
         RequestError::UnsupportedAsset(price_asset),
     )?;
 
-    Ok(OrderRequest::MarketOrder {
+    Ok(OrderRequest::NewMarketOrder {
         order_asset,
         price_asset,
         qty,

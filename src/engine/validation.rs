@@ -37,7 +37,7 @@ impl OrderRequestValidator {
 
     pub fn validate(&self, request: &OrderRequest) -> Result<(), &str> {
         match *request {
-            OrderRequest::MarketOrder {
+            OrderRequest::NewMarketOrder {
                 order_asset,
                 price_asset,
                 side,
@@ -45,7 +45,7 @@ impl OrderRequestValidator {
                 ts,
             } => self.validate_market(order_asset, price_asset, qty),
 
-            OrderRequest::LimitOrder {
+            OrderRequest::NewLimitOrder {
                 order_asset,
                 price_asset,
                 side,

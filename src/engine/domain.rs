@@ -6,13 +6,21 @@ pub enum OrderSide {
     Ask,
 }
 
-
+#[derive(Debug, Clone)]
 pub struct Order {
+    pub order_id: u64,
     pub order_asset: Asset,
     pub price_asset: Asset,
+    pub side: OrderSide,
     pub price: f64,
     pub qty: f64,
-    pub side: OrderSide,
+}
+
+
+#[derive(Eq, PartialEq, Debug, Copy, Clone)]
+pub enum OrderType {
+    Market,
+    Limit,
 }
 
 
