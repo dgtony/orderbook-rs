@@ -11,6 +11,7 @@ pub enum OrderRequest {
         qty: f64,
         ts: SystemTime,
     },
+
     NewLimitOrder {
         order_asset: Asset,
         price_asset: Asset,
@@ -19,6 +20,7 @@ pub enum OrderRequest {
         qty: f64,
         ts: SystemTime,
     },
+
     AmendOrder {
         id: u64,
         side: OrderSide,
@@ -26,6 +28,7 @@ pub enum OrderRequest {
         qty: f64,
         ts: SystemTime,
     },
+
     CancelOrder {
         id: u64,
         side: OrderSide,

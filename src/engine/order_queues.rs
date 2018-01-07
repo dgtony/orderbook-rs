@@ -152,6 +152,7 @@ impl<T> OrderQueue<T> {
 
     /* Internal methods */
 
+
     /// Used internally when current order is partially matched.
     ///
     /// Note: do not modify price or time, cause index doesn't change!
@@ -164,6 +165,7 @@ impl<T> OrderQueue<T> {
         }
         false
     }
+
 
     /// Verify if queue should be cleaned
     fn clean_check(&mut self) {
@@ -224,9 +226,11 @@ mod test {
         pub name: &'static str,
     }
 
+
     fn get_queue_empty(side: OrderSide) -> OrderQueue<TestOrder> {
         OrderQueue::new(side, 5, 10)
     }
+
 
     fn get_queue_bids() -> OrderQueue<TestOrder> {
         let mut bid_queue = get_queue_empty(OrderSide::Bid);
@@ -255,6 +259,7 @@ mod test {
         bid_queue
     }
 
+
     fn get_queue_asks() -> OrderQueue<TestOrder> {
         let mut ask_queue = get_queue_empty(OrderSide::Ask);
         assert!(ask_queue.insert(
@@ -280,6 +285,7 @@ mod test {
         ask_queue
     }
 
+
     #[test]
     fn queue_operations_insert_unique() {
         let mut bid_queue = get_queue_empty(OrderSide::Bid);
@@ -301,6 +307,7 @@ mod test {
             TestOrder { name: "first bid" },
         ));
     }
+
 
     #[test]
     fn queue_operations_ordering_bid() {
@@ -367,6 +374,7 @@ mod test {
         assert_eq!(ask_queue.pop().unwrap().name, "new last");
     }
 
+
     #[test]
     fn queue_operations_cancel_order1() {
         let mut bid_queue = get_queue_bids();
@@ -376,6 +384,7 @@ mod test {
         assert_eq!(bid_queue.pop().unwrap().name, "high bid second");
         assert_eq!(bid_queue.pop().unwrap().name, "low bid");
     }
+
 
     #[test]
     fn queue_operations_cancel_order2() {

@@ -24,6 +24,7 @@ pub enum SuccessfulProcessingStep {
         order_type: OrderType,
         ts: SystemTime,
     },
+
     Filled {
         order_id: u64,
         side: OrderSide,
@@ -32,6 +33,7 @@ pub enum SuccessfulProcessingStep {
         qty: f64,
         ts: SystemTime,
     },
+
     PartiallyFilled {
         order_id: u64,
         side: OrderSide,
@@ -40,12 +42,14 @@ pub enum SuccessfulProcessingStep {
         qty: f64,
         ts: SystemTime,
     },
+
     Amended {
         id: u64,
         price: f64,
         qty: f64,
         ts: SystemTime,
     },
+
     Cancelled { id: u64, ts: SystemTime },
 }
 
@@ -67,6 +71,7 @@ pub struct Orderbook {
     seq: sequence::TradeSequence,
     order_validator: OrderRequestValidator,
 }
+
 
 impl Orderbook {
     /// Create new orderbook for pair of assets
@@ -111,9 +116,9 @@ impl Orderbook {
 
         // validate request
         if let Err(reason) = self.order_validator.validate(&order) {
-            proc_result.push(Err(FailedProcessingStep::ValidationFailed(
-                String::from("reason"),
-            )));
+            proc_result.push(Err(
+                FailedProcessingStep::ValidationFailed(String::from(reason)),
+            ));
             return proc_result;
         }
 
@@ -123,7 +128,7 @@ impl Orderbook {
                 price_asset,
                 side,
                 qty,
-                ts,
+                ts: _ts,
             } => {
                 // generate new ID for order
                 let order_id = self.seq.next_id();
@@ -140,7 +145,6 @@ impl Orderbook {
                     price_asset,
                     side,
                     qty,
-                    //ts,
                 );
             }
 
@@ -181,8 +185,8 @@ impl Orderbook {
                 self.process_order_amend(&mut proc_result, id, side, price, qty, ts);
             }
 
-            OrderRequest::CancelOrder { id, side, ts } => {
-                self.process_order_cancel(&mut proc_result, id, side, ts);
+            OrderRequest::CancelOrder { id, side } => {
+                self.process_order_cancel(&mut proc_result, id, side);
             }
         }
 
@@ -211,7 +215,6 @@ impl Orderbook {
             opposite_queue.peek().cloned()
         };
 
-        //let opposite_order_result = opposite_queue.peek().cloned();
         if let Some(opposite_order) = opposite_order_result {
             let matching_complete = self.order_matching(
                 results,
@@ -221,7 +224,6 @@ impl Orderbook {
                 price_asset,
                 OrderType::Market,
                 side,
-                opposite_order.price,
                 qty,
             );
 
@@ -236,126 +238,6 @@ impl Orderbook {
                     qty - opposite_order.qty,
                 );
             }
-
-        /*
-            if qty < opposite_order.qty {
-                // fill market and modify opposite
-                let deal_time = SystemTime::now();
-
-                // report filled market order
-                results.push(Ok(SuccessfulProcessingStep::Filled {
-                    order_id,
-                    side,
-                    order_type: OrderType::Market,
-                    price: opposite_order.price,
-                    qty,
-                    ts: deal_time,
-                }));
-
-                // report partially filled opposite limit order
-                results.push(Ok(SuccessfulProcessingStep::PartiallyFilled {
-                    order_id: opposite_order.order_id,
-                    side: opposite_order.side,
-                    order_type: OrderType::Limit,
-                    price: opposite_order.price,
-                    qty,
-                    ts: deal_time,
-                }));
-
-                // modify unmatched part of the limit order
-                {
-                    let opposite_queue = match side {
-                        OrderSide::Bid => &mut self.ask_queue,
-                        OrderSide::Ask => &mut self.bid_queue,
-                    };
-                    opposite_queue.modify_current_order(Order {
-                        order_id: opposite_order.order_id,
-                        order_asset,
-                        price_asset,
-                        side: opposite_order.side,
-                        price: opposite_order.price,
-                        qty: opposite_order.qty - qty,
-                    });
-                }
-
-            } else if qty > opposite_order.qty {
-                // partially fill market, fill opposite limit and recursively process the rest
-                let deal_time = SystemTime::now();
-
-                // report partially filled market order
-                results.push(Ok(SuccessfulProcessingStep::PartiallyFilled {
-                    order_id,
-                    side,
-                    order_type: OrderType::Market,
-                    price: opposite_order.price,
-                    qty: opposite_order.qty,
-                    ts: deal_time,
-                }));
-
-                // report filled opposite limit order
-                results.push(Ok(SuccessfulProcessingStep::Filled {
-                    order_id: opposite_order.order_id,
-                    side: opposite_order.side,
-                    order_type: OrderType::Limit,
-                    price: opposite_order.price,
-                    qty: opposite_order.qty,
-                    ts: deal_time,
-                }));
-
-                // remove filled limit order from the queue
-                {
-                    let opposite_queue = match side {
-                        OrderSide::Bid => &mut self.ask_queue,
-                        OrderSide::Ask => &mut self.bid_queue,
-                    };
-                    opposite_queue.pop();
-                }
-
-                // process the rest
-                self.process_market_order(
-                    results,
-                    order_id,
-                    order_asset,
-                    price_asset,
-                    side,
-                    qty - opposite_order.qty,
-                    //ts,
-                )
-
-            } else {
-                // orders exactly match -> fill both and remove limit from queue
-                let deal_time = SystemTime::now();
-
-                // report filled market order
-                results.push(Ok(SuccessfulProcessingStep::Filled {
-                    order_id,
-                    side,
-                    order_type: OrderType::Market,
-                    price: opposite_order.price,
-                    qty,
-                    ts: deal_time,
-                }));
-
-                // report filled opposite limit order
-                results.push(Ok(SuccessfulProcessingStep::Filled {
-                    order_id: opposite_order.order_id,
-                    side: opposite_order.side,
-                    order_type: OrderType::Limit,
-                    price: opposite_order.price,
-                    qty,
-                    ts: deal_time,
-                }));
-
-                // remove filled limit order from the queue
-                {
-                    let opposite_queue = match side {
-                        OrderSide::Bid => &mut self.ask_queue,
-                        OrderSide::Ask => &mut self.bid_queue,
-                    };
-                    opposite_queue.pop();
-                }
-            }
-            */
 
         } else {
             // no limit orders found
@@ -401,7 +283,6 @@ impl Orderbook {
                     price_asset,
                     OrderType::Limit,
                     side,
-                    opposite_order.price,
                     qty,
                 );
 
@@ -418,128 +299,6 @@ impl Orderbook {
                         ts,
                     );
                 }
-
-
-            /*
-                if qty < opposite_order.qty {
-                    // fill new limit as market and modify opposite limit
-                    let deal_time = SystemTime::now();
-
-                    // report filled market order
-                    results.push(Ok(SuccessfulProcessingStep::Filled {
-                        order_id,
-                        side,
-                        order_type: OrderType::Limit,
-                        price: opposite_order.price,
-                        qty,
-                        ts: deal_time,
-                    }));
-
-                    // report partially filled opposite limit order
-                    results.push(Ok(SuccessfulProcessingStep::PartiallyFilled {
-                        order_id: opposite_order.order_id,
-                        side: opposite_order.side,
-                        order_type: OrderType::Limit,
-                        price: opposite_order.price,
-                        qty,
-                        ts: deal_time,
-                    }));
-
-                    // modify unmatched part of the limit order
-                    {
-                        let opposite_queue = match side {
-                            OrderSide::Bid => &mut self.ask_queue,
-                            OrderSide::Ask => &mut self.bid_queue,
-                        };
-                        opposite_queue.modify_current_order(Order {
-                            order_id: opposite_order.order_id,
-                            order_asset,
-                            price_asset,
-                            side: opposite_order.side,
-                            price: opposite_order.price,
-                            qty: opposite_order.qty - qty,
-                        });
-                    }
-
-                } else if qty > opposite_order.qty {
-                    // partially fill new limit order, fill opposite limit and
-                    // recursively process the rest
-                    let deal_time = SystemTime::now();
-
-                    // report partially filled market order
-                    results.push(Ok(SuccessfulProcessingStep::PartiallyFilled {
-                        order_id,
-                        side,
-                        order_type: OrderType::Limit,
-                        price: opposite_order.price,
-                        qty: opposite_order.qty,
-                        ts: deal_time,
-                    }));
-
-                    // report filled opposite limit order
-                    results.push(Ok(SuccessfulProcessingStep::Filled {
-                        order_id: opposite_order.order_id,
-                        side: opposite_order.side,
-                        order_type: OrderType::Limit,
-                        price: opposite_order.price,
-                        qty: opposite_order.qty,
-                        ts: deal_time,
-                    }));
-
-                    // remove filled limit order from the queue
-                    {
-                        let opposite_queue = match side {
-                            OrderSide::Bid => &mut self.ask_queue,
-                            OrderSide::Ask => &mut self.bid_queue,
-                        };
-                        opposite_queue.pop();
-                    }
-
-                    // process the rest of new limit order
-                    self.process_limit_order(
-                        results,
-                        order_id,
-                        order_asset,
-                        price_asset,
-                        side,
-                        price,
-                        qty - opposite_order.qty,
-                        ts,
-                    );
-
-                } else {
-                    // orders exactly match -> fill both and remove old limit
-                    let deal_time = SystemTime::now();
-
-                    // report filled market order
-                    results.push(Ok(SuccessfulProcessingStep::Filled {
-                        order_id,
-                        side,
-                        order_type: OrderType::Limit,
-                        price: opposite_order.price,
-                        qty,
-                        ts: deal_time,
-                    }));
-
-                    // report filled opposite limit order
-                    results.push(Ok(SuccessfulProcessingStep::Filled {
-                        order_id: opposite_order.order_id,
-                        side: opposite_order.side,
-                        order_type: OrderType::Limit,
-                        price: opposite_order.price,
-                        qty,
-                        ts: deal_time,
-                    }));
-
-                    // remove filled limit order from the queue
-                    {
-                        let opposite_queue = match side {
-                            OrderSide::Bid => &mut self.ask_queue,
-                            OrderSide::Ask => &mut self.bid_queue,
-                        };
-                        opposite_queue.pop();
-                    }
-                }*/
 
             } else {
                 // just insert new order in queue
@@ -615,7 +374,6 @@ impl Orderbook {
         results: &mut OrderProcessingResult,
         order_id: u64,
         side: OrderSide,
-        ts: SystemTime,
     ) {
         let order_queue = match side {
             OrderSide::Bid => &mut self.bid_queue,
@@ -634,6 +392,7 @@ impl Orderbook {
 
 
     /* Helpers */
+
 
     fn store_new_limit_order(
         &mut self,
@@ -678,15 +437,15 @@ impl Orderbook {
         price_asset: Asset,
         order_type: OrderType,
         side: OrderSide,
-        price: f64,
         qty: f64,
     ) -> bool {
-        // actual processing time
+
+        // real processing time
         let deal_time = SystemTime::now();
 
         // match immediately
         if qty < opposite_order.qty {
-            // fill new limit as market and modify opposite limit
+            // fill new limit and modify opposite limit
 
             // report filled new order
             results.push(Ok(SuccessfulProcessingStep::Filled {
@@ -708,7 +467,7 @@ impl Orderbook {
                 ts: deal_time,
             }));
 
-            // modify unmatched part of the limit order
+            // modify unmatched part of the opposite limit order
             {
                 let opposite_queue = match side {
                     OrderSide::Bid => &mut self.ask_queue,
@@ -725,10 +484,9 @@ impl Orderbook {
             }
 
         } else if qty > opposite_order.qty {
-            // partially fill new limit order, fill opposite limit and
-            // recursively process the rest
+            // partially fill new limit order, fill opposite limit and notify to process the rest
 
-            // report partially filled market order
+            // report new order partially filled
             results.push(Ok(SuccessfulProcessingStep::PartiallyFilled {
                 order_id,
                 side,
@@ -763,7 +521,7 @@ impl Orderbook {
         } else {
             // orders exactly match -> fill both and remove old limit
 
-            // report filled market order
+            // report filled new order
             results.push(Ok(SuccessfulProcessingStep::Filled {
                 order_id,
                 side,
@@ -772,7 +530,6 @@ impl Orderbook {
                 qty,
                 ts: deal_time,
             }));
-
             // report filled opposite limit order
             results.push(Ok(SuccessfulProcessingStep::Filled {
                 order_id: opposite_order.order_id,
@@ -806,19 +563,15 @@ mod test {
     use super::super::orders;
 
     #[test]
-    fn simple_cancel() {
-
+    fn cancel_nonexisting() {
         let mut orderbook = Orderbook::new(Asset::BTC, Asset::USD);
-        let request = orders::limit_order_cancel_request(1, OrderSide::Bid, SystemTime::now());
+        let request = orders::limit_order_cancel_request(1, OrderSide::Bid);
         let mut result = orderbook.process_order(request);
-
-        //println!("result: {:?}", &result);
 
         assert_eq!(result.len(), 1);
         match result.pop().unwrap() {
-            Err(FailedProcessingStep) => {}
+            Err(_) => {},
             _ => panic!("asd"),
         }
     }
-
 }

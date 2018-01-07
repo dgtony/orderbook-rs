@@ -35,34 +35,35 @@ impl OrderRequestValidator {
         }
     }
 
+
     pub fn validate(&self, request: &OrderRequest) -> Result<(), &str> {
         match *request {
             OrderRequest::NewMarketOrder {
                 order_asset,
                 price_asset,
-                side,
+                side: _side,
                 qty,
-                ts,
+                ts: _ts,
             } => self.validate_market(order_asset, price_asset, qty),
 
             OrderRequest::NewLimitOrder {
                 order_asset,
                 price_asset,
-                side,
+                side: _side,
                 price,
                 qty,
-                ts,
+                ts: _ts,
             } => self.validate_limit(order_asset, price_asset, price, qty),
 
             OrderRequest::AmendOrder {
                 id,
                 price,
-                side,
+                side: _side,
                 qty,
-                ts,
+                ts: _ts,
             } => self.validate_amend(id, price, qty),
 
-            OrderRequest::CancelOrder { id, side, ts } => self.validate_cancel(id),
+            OrderRequest::CancelOrder { id, side: _side } => self.validate_cancel(id),
         }
     }
 
@@ -118,6 +119,7 @@ impl OrderRequestValidator {
         Ok(())
     }
 
+
     fn validate_amend(&self, id: u64, price: f64, qty: f64) -> Result<(), &str> {
         if self.min_sequence_id > id || self.max_sequence_id < id {
             return Err(ERR_BAD_SEQ_ID);
@@ -134,25 +136,12 @@ impl OrderRequestValidator {
         Ok(())
     }
 
+
     fn validate_cancel(&self, id: u64) -> Result<(), &str> {
         if self.min_sequence_id > id || self.max_sequence_id < id {
             return Err(ERR_BAD_SEQ_ID);
         }
 
         Ok(())
-    }
-}
-
-
-// FIXME ?
-// Better obtain this info from admin DB
-pub fn can_trade(asset_from: &Asset, asset_to: &Asset) -> bool {
-    match (asset_from, asset_to) {
-        (_, &Asset::USD) => true,
-        (_, &Asset::EUR) => true,
-        (_, &Asset::BTC) => true,
-        (&Asset::BTC, &Asset::ETH) => true,
-        (&Asset::BTC, &Asset::OTN) => true,
-        _ => false,
     }
 }
