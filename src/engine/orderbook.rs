@@ -14,11 +14,11 @@ const MAX_STALLED_INDICES_IN_QUEUE: u64 = 10;
 const ORDER_QUEUE_INIT_CAPACITY: usize = 500;
 
 
-type OrderProcessingResult = Vec<Result<SuccessfulProcessingStep, FailedProcessingStep>>;
+type OrderProcessingResult = Vec<Result<Success, Failed>>;
 
 
 #[derive(Debug)]
-pub enum SuccessfulProcessingStep {
+pub enum Success {
     Accepted {
         id: u64,
         order_type: OrderType,
@@ -55,7 +55,7 @@ pub enum SuccessfulProcessingStep {
 
 
 #[derive(Debug)]
-pub enum FailedProcessingStep {
+pub enum Failed {
     ValidationFailed(String),
     DuplicateOrderID(u64),
     NoMatch(u64),
@@ -116,9 +116,7 @@ impl Orderbook {
 
         // validate request
         if let Err(reason) = self.order_validator.validate(&order) {
-            proc_result.push(Err(
-                FailedProcessingStep::ValidationFailed(String::from(reason)),
-            ));
+            proc_result.push(Err(Failed::ValidationFailed(String::from(reason))));
             return proc_result;
         }
 
@@ -132,7 +130,7 @@ impl Orderbook {
             } => {
                 // generate new ID for order
                 let order_id = self.seq.next_id();
-                proc_result.push(Ok(SuccessfulProcessingStep::Accepted {
+                proc_result.push(Ok(Success::Accepted {
                     id: order_id,
                     order_type: OrderType::Market,
                     ts: SystemTime::now(),
@@ -157,7 +155,7 @@ impl Orderbook {
                 ts,
             } => {
                 let order_id = self.seq.next_id();
-                proc_result.push(Ok(SuccessfulProcessingStep::Accepted {
+                proc_result.push(Ok(Success::Accepted {
                     id: order_id,
                     order_type: OrderType::Limit,
                     ts: SystemTime::now(),
@@ -192,6 +190,14 @@ impl Orderbook {
 
         // return collected processing results
         proc_result
+    }
+
+
+    /// Get current spread as a tuple: (bid, ask)
+    pub fn current_spread(&mut self) -> Option<(f64, f64)> {
+        let bid = self.bid_queue.peek()?.price;
+        let ask = self.ask_queue.peek()?.price;
+        Some((bid, ask))
     }
 
 
@@ -241,7 +247,7 @@ impl Orderbook {
 
         } else {
             // no limit orders found
-            results.push(Err(FailedProcessingStep::NoMatch(order_id)));
+            results.push(Err(Failed::NoMatch(order_id)));
         }
     }
 
@@ -357,14 +363,14 @@ impl Orderbook {
             },
         )
         {
-            results.push(Ok(SuccessfulProcessingStep::Amended {
+            results.push(Ok(Success::Amended {
                 id: order_id,
                 price,
                 qty,
                 ts: SystemTime::now(),
             }));
         } else {
-            results.push(Err(FailedProcessingStep::OrderNotFound(order_id)));
+            results.push(Err(Failed::OrderNotFound(order_id)));
         }
     }
 
@@ -381,12 +387,12 @@ impl Orderbook {
         };
 
         if order_queue.cancel(order_id) {
-            results.push(Ok(SuccessfulProcessingStep::Cancelled {
+            results.push(Ok(Success::Cancelled {
                 id: order_id,
                 ts: SystemTime::now(),
             }));
         } else {
-            results.push(Err(FailedProcessingStep::OrderNotFound(order_id)));
+            results.push(Err(Failed::OrderNotFound(order_id)));
         }
     }
 
@@ -423,7 +429,7 @@ impl Orderbook {
             },
         )
         {
-            results.push(Err(FailedProcessingStep::DuplicateOrderID(order_id)))
+            results.push(Err(Failed::DuplicateOrderID(order_id)))
         };
     }
 
@@ -448,7 +454,7 @@ impl Orderbook {
             // fill new limit and modify opposite limit
 
             // report filled new order
-            results.push(Ok(SuccessfulProcessingStep::Filled {
+            results.push(Ok(Success::Filled {
                 order_id,
                 side,
                 order_type,
@@ -458,7 +464,7 @@ impl Orderbook {
             }));
 
             // report partially filled opposite limit order
-            results.push(Ok(SuccessfulProcessingStep::PartiallyFilled {
+            results.push(Ok(Success::PartiallyFilled {
                 order_id: opposite_order.order_id,
                 side: opposite_order.side,
                 order_type: OrderType::Limit,
@@ -487,7 +493,7 @@ impl Orderbook {
             // partially fill new limit order, fill opposite limit and notify to process the rest
 
             // report new order partially filled
-            results.push(Ok(SuccessfulProcessingStep::PartiallyFilled {
+            results.push(Ok(Success::PartiallyFilled {
                 order_id,
                 side,
                 order_type,
@@ -497,7 +503,7 @@ impl Orderbook {
             }));
 
             // report filled opposite limit order
-            results.push(Ok(SuccessfulProcessingStep::Filled {
+            results.push(Ok(Success::Filled {
                 order_id: opposite_order.order_id,
                 side: opposite_order.side,
                 order_type: OrderType::Limit,
@@ -522,7 +528,7 @@ impl Orderbook {
             // orders exactly match -> fill both and remove old limit
 
             // report filled new order
-            results.push(Ok(SuccessfulProcessingStep::Filled {
+            results.push(Ok(Success::Filled {
                 order_id,
                 side,
                 order_type,
@@ -531,7 +537,7 @@ impl Orderbook {
                 ts: deal_time,
             }));
             // report filled opposite limit order
-            results.push(Ok(SuccessfulProcessingStep::Filled {
+            results.push(Ok(Success::Filled {
                 order_id: opposite_order.order_id,
                 side: opposite_order.side,
                 order_type: OrderType::Limit,
@@ -570,8 +576,8 @@ mod test {
 
         assert_eq!(result.len(), 1);
         match result.pop().unwrap() {
-            Err(_) => {},
-            _ => panic!("asd"),
+            Err(_) => (),
+            _ => panic!("unexpected events"),
         }
     }
 }

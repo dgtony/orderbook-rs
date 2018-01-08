@@ -299,12 +299,12 @@ mod test {
             TestOrder { name: "first bid" },
         ));
 
-        // discard
+        // discard order with existing ID
         assert!(!bid_queue.insert(
             1,
             1.02,
             time::SystemTime::now(),
-            TestOrder { name: "first bid" },
+            TestOrder { name: "another first bid" },
         ));
     }
 
