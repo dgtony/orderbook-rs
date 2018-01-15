@@ -16,7 +16,7 @@ const MAX_STALLED_INDICES_IN_QUEUE: u64 = 10;
 const ORDER_QUEUE_INIT_CAPACITY: usize = 500;
 
 
-type OrderProcessingResult = Vec<Result<Success, Failed>>;
+pub type OrderProcessingResult = Vec<Result<Success, Failed>>;
 
 
 #[derive(Debug)]
