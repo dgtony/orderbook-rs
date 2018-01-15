@@ -1,6 +1,7 @@
 
-use super::orders::OrderRequest;
 use std::fmt::Debug;
+
+use super::orders::OrderRequest;
 
 
 /// Validation errors

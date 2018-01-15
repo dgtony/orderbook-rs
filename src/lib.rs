@@ -9,7 +9,6 @@ pub use engine::orders;
 #[cfg(test)]
 mod tests {
     use super::*;
-    //use super::orderbook::{Success, Failed};
 
     const FLOAT_THRESHOLD: f64 = 1e-6;
 
@@ -27,7 +26,6 @@ mod tests {
         EUR,
         BTC,
         ETH,
-        OTN,
     }
 
     fn parse_asset(asset: &str) -> Option<Asset> {
@@ -36,7 +34,6 @@ mod tests {
         "EUR" => Some(Asset::EUR),
         "BTC" => Some(Asset::BTC),
         "ETH" => Some(Asset::ETH),
-        "OTN" => Some(Asset::OTN),
         _ => None,
     }
 }

@@ -577,10 +577,7 @@ mod test {
     #[derive(PartialEq, Eq, Debug, Copy, Clone)]
     pub enum Asset {
         USD,
-        EUR,
         BTC,
-        ETH,
-        OTN,
     }
 
     #[test]

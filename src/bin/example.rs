@@ -6,29 +6,27 @@ use orderbook::{Orderbook, OrderSide, orders};
 
 
 #[derive(PartialEq, Eq, Debug, Copy, Clone)]
-pub enum SupportedAssets {
+pub enum BrokerAsset {
     USD,
     EUR,
     BTC,
     ETH,
-    OTN,
 }
 
 
-fn parse_asset(asset: &str) -> Option<SupportedAssets> {
+fn parse_asset(asset: &str) -> Option<BrokerAsset> {
     match asset {
-        "USD" => Some(SupportedAssets::USD),
-        "EUR" => Some(SupportedAssets::EUR),
-        "BTC" => Some(SupportedAssets::BTC),
-        "ETH" => Some(SupportedAssets::ETH),
-        "OTN" => Some(SupportedAssets::OTN),
+        "USD" => Some(BrokerAsset::USD),
+        "EUR" => Some(BrokerAsset::EUR),
+        "BTC" => Some(BrokerAsset::BTC),
+        "ETH" => Some(BrokerAsset::ETH),
         _ => None,
     }
 }
 
 
 fn main() {
-    let mut orderbook = Orderbook::new(SupportedAssets::BTC, SupportedAssets::USD);
+    let mut orderbook = Orderbook::new(BrokerAsset::BTC, BrokerAsset::USD);
     let order_asset = parse_asset("BTC").unwrap();
     let price_asset = parse_asset("USD").unwrap();
 
@@ -40,8 +38,8 @@ fn main() {
     ];
 
     for order in order_list {
-        println!("processing order: {:?}", &order);
+        println!("\nget order: {:?}", &order);
         let res = orderbook.process_order(order);
-        println!("result: {:?}", res);
+        println!("processing result: {:?}\n", res);
     }
 }
