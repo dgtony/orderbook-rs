@@ -1,4 +1,5 @@
 
+use std::fmt::Debug;
 
 #[derive(Debug, Copy, Clone)]
 pub enum OrderSide {
@@ -7,7 +8,9 @@ pub enum OrderSide {
 }
 
 #[derive(Debug, Clone)]
-pub struct Order {
+pub struct Order<Asset>
+    where Asset: Debug + Clone
+{
     pub order_id: u64,
     pub order_asset: Asset,
     pub price_asset: Asset,
@@ -21,26 +24,4 @@ pub struct Order {
 pub enum OrderType {
     Market,
     Limit,
-}
-
-
-#[derive(PartialEq, Eq, Debug, Copy, Clone)]
-pub enum Asset {
-    USD,
-    EUR,
-    BTC,
-    ETH,
-    OTN,
-}
-
-
-pub fn parse_asset(asset: &str) -> Option<Asset> {
-    match asset {
-        "USD" => Some(Asset::USD),
-        "EUR" => Some(Asset::EUR),
-        "BTC" => Some(Asset::BTC),
-        "ETH" => Some(Asset::ETH),
-        "OTN" => Some(Asset::OTN),
-        _ => None,
-    }
 }

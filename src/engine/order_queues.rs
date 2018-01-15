@@ -54,7 +54,6 @@ impl Eq for OrderIndex {}
 
 
 /// Public methods
-//pub struct OrderQueue<T: Clone> {
 pub struct OrderQueue<T> {
     // use Option in order to replace heap in mutable borrow
     idx_queue: Option<BinaryHeap<OrderIndex>>,
@@ -65,7 +64,6 @@ pub struct OrderQueue<T> {
 }
 
 
-//impl<T: Clone> OrderQueue<T> {
 impl<T> OrderQueue<T> {
     /// Create new order queue
     ///

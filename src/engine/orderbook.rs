@@ -1,7 +1,9 @@
 
 use std::time::SystemTime;
+use std::fmt::Debug;
 
-use super::domain::{Asset, Order, OrderSide, OrderType};
+
+use super::domain::{Order, OrderSide, OrderType};
 use super::orders::OrderRequest;
 use super::order_queues::OrderQueue;
 use super::sequence;
@@ -63,17 +65,21 @@ pub enum Failed {
 }
 
 
-pub struct Orderbook {
+pub struct Orderbook<Asset>
+    where Asset: Debug + Clone + Copy + Eq
+{
     order_asset: Asset,
     price_asset: Asset,
-    bid_queue: OrderQueue<Order>,
-    ask_queue: OrderQueue<Order>,
+    bid_queue: OrderQueue<Order<Asset>>,
+    ask_queue: OrderQueue<Order<Asset>>,
     seq: sequence::TradeSequence,
-    order_validator: OrderRequestValidator,
+    order_validator: OrderRequestValidator<Asset>,
 }
 
 
-impl Orderbook {
+impl <Asset> Orderbook<Asset>
+    where Asset: Debug + Clone + Copy + Eq
+{
     /// Create new orderbook for pair of assets
     ///
     /// # Examples
@@ -110,7 +116,7 @@ impl Orderbook {
     }
 
 
-    pub fn process_order(&mut self, order: OrderRequest) -> OrderProcessingResult {
+    pub fn process_order(&mut self, order: OrderRequest<Asset>) -> OrderProcessingResult {
         // processing result accumulator
         let mut proc_result: OrderProcessingResult = vec![];
 
@@ -437,7 +443,7 @@ impl Orderbook {
     fn order_matching(
         &mut self,
         results: &mut OrderProcessingResult,
-        opposite_order: &Order,
+        opposite_order: &Order<Asset>,
         order_id: u64,
         order_asset: Asset,
         price_asset: Asset,
@@ -567,6 +573,15 @@ mod test {
 
     use super::*;
     use super::super::orders;
+
+    #[derive(PartialEq, Eq, Debug, Copy, Clone)]
+    pub enum Asset {
+        USD,
+        EUR,
+        BTC,
+        ETH,
+        OTN,
+    }
 
     #[test]
     fn cancel_nonexisting() {

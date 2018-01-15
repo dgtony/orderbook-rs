@@ -1,15 +1,15 @@
 
 mod engine;
 
-pub use engine::domain;
-pub use engine::orderbook;
+pub use engine::domain::OrderSide;
+pub use engine::orderbook::{Orderbook, Success, Failed};
 pub use engine::orders;
 
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use super::orderbook::{Success, Failed};
+    //use super::orderbook::{Success, Failed};
 
     const FLOAT_THRESHOLD: f64 = 1e-6;
 
@@ -21,19 +21,38 @@ mod tests {
         }
     }
 
+    #[derive(PartialEq, Eq, Debug, Copy, Clone)]
+    enum Asset {
+        USD,
+        EUR,
+        BTC,
+        ETH,
+        OTN,
+    }
+
+    fn parse_asset(asset: &str) -> Option<Asset> {
+    match asset {
+        "USD" => Some(Asset::USD),
+        "EUR" => Some(Asset::EUR),
+        "BTC" => Some(Asset::BTC),
+        "ETH" => Some(Asset::ETH),
+        "OTN" => Some(Asset::OTN),
+        _ => None,
+    }
+}
 
     #[test]
     fn market_order_on_empty_orderbook() {
         use std::time::SystemTime;
 
-        let mut orderbook = orderbook::Orderbook::new(domain::Asset::BTC, domain::Asset::USD);
-        let order_asset = domain::parse_asset("BTC").unwrap();
-        let price_asset = domain::parse_asset("USD").unwrap();
+        let mut orderbook = Orderbook::new(Asset::BTC, Asset::USD);
+        let order_asset = parse_asset("BTC").unwrap();
+        let price_asset = parse_asset("USD").unwrap();
 
         let order1 = orders::new_market_order_request(
             order_asset,
             price_asset,
-            domain::OrderSide::Bid,
+            OrderSide::Bid,
             2.0,
             SystemTime::now(),
         );
@@ -59,14 +78,14 @@ mod tests {
     fn market_order_partial_match() {
         use std::time::SystemTime;
 
-        let mut orderbook = orderbook::Orderbook::new(domain::Asset::BTC, domain::Asset::USD);
-        let order_asset = domain::parse_asset("BTC").unwrap();
-        let price_asset = domain::parse_asset("USD").unwrap();
+        let mut orderbook = Orderbook::new(Asset::BTC, Asset::USD);
+        let order_asset = parse_asset("BTC").unwrap();
+        let price_asset = parse_asset("USD").unwrap();
 
         let order1 = orders::new_limit_order_request(
             order_asset,
             price_asset,
-            domain::OrderSide::Bid,
+            OrderSide::Bid,
             10.0,
             1.0,
             SystemTime::now(),
@@ -75,7 +94,7 @@ mod tests {
         let order2 = orders::new_market_order_request(
             order_asset,
             price_asset,
-            domain::OrderSide::Ask,
+            OrderSide::Ask,
             0.5,
             SystemTime::now(),
         );
@@ -115,14 +134,14 @@ mod tests {
     fn market_order_two_orders_match() {
         use std::time::SystemTime;
 
-        let mut orderbook = orderbook::Orderbook::new(domain::Asset::BTC, domain::Asset::USD);
-        let order_asset = domain::parse_asset("BTC").unwrap();
-        let price_asset = domain::parse_asset("USD").unwrap();
+        let mut orderbook = Orderbook::new(Asset::BTC, Asset::USD);
+        let order_asset = parse_asset("BTC").unwrap();
+        let price_asset = parse_asset("USD").unwrap();
 
         let order1 = orders::new_limit_order_request(
             order_asset,
             price_asset,
-            domain::OrderSide::Bid,
+            OrderSide::Bid,
             10.0,
             1.0,
             SystemTime::now(),
@@ -131,7 +150,7 @@ mod tests {
         let order2 = orders::new_limit_order_request(
             order_asset,
             price_asset,
-            domain::OrderSide::Bid,
+            OrderSide::Bid,
             12.0,
             1.0,
             SystemTime::now(),
@@ -140,7 +159,7 @@ mod tests {
         let order3 = orders::new_market_order_request(
             order_asset,
             price_asset,
-            domain::OrderSide::Ask,
+            OrderSide::Ask,
             1.5,
             SystemTime::now(),
         );
@@ -199,14 +218,14 @@ mod tests {
     fn limit_order_on_empty_orderbook() {
         use std::time::SystemTime;
 
-        let mut orderbook = orderbook::Orderbook::new(domain::Asset::BTC, domain::Asset::USD);
-        let order_asset = domain::parse_asset("BTC").unwrap();
-        let price_asset = domain::parse_asset("USD").unwrap();
+        let mut orderbook = Orderbook::new(Asset::BTC, Asset::USD);
+        let order_asset = parse_asset("BTC").unwrap();
+        let price_asset = parse_asset("USD").unwrap();
 
         let order1 = orders::new_limit_order_request(
             order_asset,
             price_asset,
-            domain::OrderSide::Bid,
+            OrderSide::Bid,
             10.0,
             2.0,
             SystemTime::now(),
@@ -229,14 +248,14 @@ mod tests {
     fn limit_order_partial_match() {
         use std::time::SystemTime;
 
-        let mut orderbook = orderbook::Orderbook::new(domain::Asset::BTC, domain::Asset::USD);
-        let order_asset = domain::parse_asset("BTC").unwrap();
-        let price_asset = domain::parse_asset("USD").unwrap();
+        let mut orderbook = Orderbook::new(Asset::BTC, Asset::USD);
+        let order_asset = parse_asset("BTC").unwrap();
+        let price_asset = parse_asset("USD").unwrap();
 
         let order1 = orders::new_limit_order_request(
             order_asset,
             price_asset,
-            domain::OrderSide::Bid,
+            OrderSide::Bid,
             10.0,
             1.0,
             SystemTime::now(),
@@ -245,7 +264,7 @@ mod tests {
         let order2 = orders::new_limit_order_request(
             order_asset,
             price_asset,
-            domain::OrderSide::Ask,
+            OrderSide::Ask,
             9.0,
             0.5,
             SystemTime::now(),
@@ -286,14 +305,14 @@ mod tests {
     fn limit_order_exact_match() {
         use std::time::SystemTime;
 
-        let mut orderbook = orderbook::Orderbook::new(domain::Asset::BTC, domain::Asset::USD);
-        let order_asset = domain::parse_asset("BTC").unwrap();
-        let price_asset = domain::parse_asset("USD").unwrap();
+        let mut orderbook = Orderbook::new(Asset::BTC, Asset::USD);
+        let order_asset = parse_asset("BTC").unwrap();
+        let price_asset = parse_asset("USD").unwrap();
 
         let order1 = orders::new_limit_order_request(
             order_asset,
             price_asset,
-            domain::OrderSide::Bid,
+            OrderSide::Bid,
             10.0,
             1.0,
             SystemTime::now(),
@@ -302,7 +321,7 @@ mod tests {
         let order2 = orders::new_limit_order_request(
             order_asset,
             price_asset,
-            domain::OrderSide::Ask,
+            OrderSide::Ask,
             9.0,
             0.5,
             SystemTime::now(),
@@ -340,7 +359,7 @@ mod tests {
         let order3 = orders::new_limit_order_request(
             order_asset,
             price_asset,
-            domain::OrderSide::Ask,
+            OrderSide::Ask,
             8.0,
             0.5,
             SystemTime::now(),
@@ -382,14 +401,14 @@ mod tests {
     fn current_spread() {
         use std::time::SystemTime;
 
-        let mut orderbook = orderbook::Orderbook::new(domain::Asset::BTC, domain::Asset::USD);
-        let order_asset = domain::parse_asset("BTC").unwrap();
-        let price_asset = domain::parse_asset("USD").unwrap();
+        let mut orderbook = Orderbook::new(Asset::BTC, Asset::USD);
+        let order_asset = parse_asset("BTC").unwrap();
+        let price_asset = parse_asset("USD").unwrap();
 
         let order1 = orders::new_limit_order_request(
             order_asset,
             price_asset,
-            domain::OrderSide::Bid,
+            OrderSide::Bid,
             10.0,
             1.0,
             SystemTime::now(),
@@ -401,7 +420,7 @@ mod tests {
         let order2 = orders::new_limit_order_request(
             order_asset,
             price_asset,
-            domain::OrderSide::Ask,
+            OrderSide::Ask,
             12.0,
             0.5,
             SystemTime::now(),
@@ -410,7 +429,7 @@ mod tests {
         let order3 = orders::new_limit_order_request(
             order_asset,
             price_asset,
-            domain::OrderSide::Ask,
+            OrderSide::Ask,
             12.5,
             2.5,
             SystemTime::now(),
@@ -426,7 +445,7 @@ mod tests {
         let order4 = orders::new_limit_order_request(
             order_asset,
             price_asset,
-            domain::OrderSide::Bid,
+            OrderSide::Bid,
             14.0,
             1.5,
             SystemTime::now(),
