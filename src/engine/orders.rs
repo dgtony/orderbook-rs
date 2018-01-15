@@ -7,7 +7,8 @@ use super::domain::OrderSide;
 
 #[derive(Debug)]
 pub enum OrderRequest<Asset>
-    where Asset: Debug + Clone
+where
+    Asset: Debug + Clone,
 {
     NewMarketOrder {
         order_asset: Asset,
@@ -52,7 +53,10 @@ pub fn new_market_order_request<Asset>(
     side: OrderSide,
     qty: f64,
     ts: SystemTime,
-) -> OrderRequest<Asset> where Asset: Debug + Clone {
+) -> OrderRequest<Asset>
+where
+    Asset: Debug + Clone,
+{
 
     OrderRequest::NewMarketOrder {
         order_asset,
@@ -72,7 +76,10 @@ pub fn new_limit_order_request<Asset>(
     price: f64,
     qty: f64,
     ts: SystemTime,
-) -> OrderRequest<Asset> where Asset: Debug + Clone {
+) -> OrderRequest<Asset>
+where
+    Asset: Debug + Clone,
+{
 
     OrderRequest::NewLimitOrder {
         order_asset,
@@ -95,7 +102,10 @@ pub fn amend_order_request<Asset>(
     price: f64,
     qty: f64,
     ts: SystemTime,
-) -> OrderRequest<Asset> where Asset: Debug + Clone {
+) -> OrderRequest<Asset>
+where
+    Asset: Debug + Clone,
+{
 
     OrderRequest::AmendOrder {
         id,
@@ -109,9 +119,8 @@ pub fn amend_order_request<Asset>(
 
 /// Create request for cancelling active limit order
 pub fn limit_order_cancel_request<Asset>(order_id: u64, side: OrderSide) -> OrderRequest<Asset>
-    where Asset: Debug + Clone {
-    OrderRequest::CancelOrder {
-        id: order_id,
-        side,
-    }
+where
+    Asset: Debug + Clone,
+{
+    OrderRequest::CancelOrder { id: order_id, side }
 }

@@ -66,7 +66,8 @@ pub enum Failed {
 
 
 pub struct Orderbook<Asset>
-    where Asset: Debug + Clone + Copy + Eq
+where
+    Asset: Debug + Clone + Copy + Eq,
 {
     order_asset: Asset,
     price_asset: Asset,
@@ -77,8 +78,9 @@ pub struct Orderbook<Asset>
 }
 
 
-impl <Asset> Orderbook<Asset>
-    where Asset: Debug + Clone + Copy + Eq
+impl<Asset> Orderbook<Asset>
+where
+    Asset: Debug + Clone + Copy + Eq,
 {
     /// Create new orderbook for pair of assets
     ///

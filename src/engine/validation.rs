@@ -14,16 +14,16 @@ const ERR_BAD_SEQ_ID: &str = "order ID out of range";
 
 /* Validators */
 
-pub struct OrderRequestValidator<Asset>
-{
+pub struct OrderRequestValidator<Asset> {
     orderbook_order_asset: Asset,
     orderbook_price_asset: Asset,
     min_sequence_id: u64,
     max_sequence_id: u64,
 }
 
-impl <Asset> OrderRequestValidator<Asset>
-    where Asset: Debug + Clone + Copy + Eq
+impl<Asset> OrderRequestValidator<Asset>
+where
+    Asset: Debug + Clone + Copy + Eq,
 {
     pub fn new(
         orderbook_order_asset: Asset,

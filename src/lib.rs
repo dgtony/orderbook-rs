@@ -29,14 +29,14 @@ mod tests {
     }
 
     fn parse_asset(asset: &str) -> Option<Asset> {
-    match asset {
-        "USD" => Some(Asset::USD),
-        "EUR" => Some(Asset::EUR),
-        "BTC" => Some(Asset::BTC),
-        "ETH" => Some(Asset::ETH),
-        _ => None,
+        match asset {
+            "USD" => Some(Asset::USD),
+            "EUR" => Some(Asset::EUR),
+            "BTC" => Some(Asset::BTC),
+            "ETH" => Some(Asset::ETH),
+            _ => None,
+        }
     }
-}
 
     #[test]
     fn market_order_on_empty_orderbook() {

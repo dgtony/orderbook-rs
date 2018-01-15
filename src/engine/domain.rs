@@ -9,7 +9,8 @@ pub enum OrderSide {
 
 #[derive(Debug, Clone)]
 pub struct Order<Asset>
-    where Asset: Debug + Clone
+where
+    Asset: Debug + Clone,
 {
     pub order_id: u64,
     pub order_asset: Asset,
