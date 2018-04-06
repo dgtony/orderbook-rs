@@ -26,6 +26,7 @@ mod tests {
         EUR,
         BTC,
         ETH,
+        JPY,
     }
 
     fn parse_asset(asset: &str) -> Option<Asset> {
@@ -34,6 +35,7 @@ mod tests {
             "EUR" => Some(Asset::EUR),
             "BTC" => Some(Asset::BTC),
             "ETH" => Some(Asset::ETH),
+            "JPY" => Some(Asset::JPY),
             _ => None,
         }
     }
