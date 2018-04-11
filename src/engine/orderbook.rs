@@ -71,8 +71,8 @@ where
 {
     order_asset: Asset,
     price_asset: Asset,
-    bid_queue: OrderQueue<Order<Asset>>,
-    ask_queue: OrderQueue<Order<Asset>>,
+    pub bid_queue: OrderQueue<Order<Asset>>,
+    pub ask_queue: OrderQueue<Order<Asset>>,
     seq: sequence::TradeSequence,
     order_validator: OrderRequestValidator<Asset>,
 }

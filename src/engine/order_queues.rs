@@ -7,9 +7,9 @@ use super::domain::OrderSide;
 
 
 #[derive(Clone)]
-struct OrderIndex {
+pub struct OrderIndex {
     id: u64,
-    price: f64,
+    pub price: f64,
     timestamp: time::SystemTime,
     order_side: OrderSide,
 }
@@ -56,8 +56,8 @@ impl Eq for OrderIndex {}
 /// Public methods
 pub struct OrderQueue<T> {
     // use Option in order to replace heap in mutable borrow
-    idx_queue: Option<BinaryHeap<OrderIndex>>,
-    orders: HashMap<u64, T>,
+    pub idx_queue: Option<BinaryHeap<OrderIndex>>,
+    pub orders: HashMap<u64, T>,
     op_counter: u64,
     max_stalled: u64,
     queue_side: OrderSide,
