@@ -8,10 +8,10 @@ use super::domain::OrderSide;
 
 #[derive(Clone)]
 pub struct OrderIndex {
-    id: u64,
+    pub id: u64,
     pub price: f64,
-    timestamp: time::SystemTime,
-    order_side: OrderSide,
+    pub timestamp: time::SystemTime,
+    pub order_side: OrderSide,
 }
 
 // Arrange at first by price and after that by time
@@ -58,9 +58,9 @@ pub struct OrderQueue<T> {
     // use Option in order to replace heap in mutable borrow
     pub idx_queue: Option<BinaryHeap<OrderIndex>>,
     pub orders: HashMap<u64, T>,
-    op_counter: u64,
-    max_stalled: u64,
-    queue_side: OrderSide,
+    pub op_counter: u64,
+    pub max_stalled: u64,
+    pub queue_side: OrderSide,
 }
 
 
