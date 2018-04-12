@@ -69,12 +69,12 @@ pub struct Orderbook<Asset>
 where
     Asset: Debug + Clone + Copy + Eq,
 {
-    order_asset: Asset,
-    price_asset: Asset,
+    pub order_asset: Asset,
+    pub price_asset: Asset,
     pub bid_queue: OrderQueue<Order<Asset>>,
     pub ask_queue: OrderQueue<Order<Asset>>,
-    seq: sequence::TradeSequence,
-    order_validator: OrderRequestValidator<Asset>,
+    pub seq: sequence::TradeSequence,
+    pub order_validator: OrderRequestValidator<Asset>,
 }
 
 
