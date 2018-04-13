@@ -1,13 +1,13 @@
 
 use std::fmt::Debug;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Serialize)]
 pub enum OrderSide {
     Bid,
     Ask,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Order<Asset>
 where
     Asset: Debug + Clone,
@@ -21,7 +21,7 @@ where
 }
 
 
-#[derive(Eq, PartialEq, Debug, Copy, Clone)]
+#[derive(Eq, PartialEq, Debug, Copy, Clone, Serialize)]
 pub enum OrderType {
     Market,
     Limit,

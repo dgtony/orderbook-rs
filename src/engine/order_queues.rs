@@ -6,7 +6,7 @@ use std::time;
 use super::domain::OrderSide;
 
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct OrderIndex {
     pub id: u64,
     pub price: f64,

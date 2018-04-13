@@ -1,5 +1,7 @@
+extern crate serde;
+#[macro_use] extern crate serde_derive;
 
-mod engine;
+pub mod engine;
 
 pub use engine::domain::OrderSide;
 pub use engine::orderbook::{Orderbook, OrderProcessingResult, Success, Failed};
