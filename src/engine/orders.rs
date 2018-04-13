@@ -5,7 +5,7 @@ use std::fmt::Debug;
 use super::domain::OrderSide;
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum OrderRequest<Asset>
 where
     Asset: Debug + Clone,
